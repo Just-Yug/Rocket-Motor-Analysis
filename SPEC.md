@@ -2,7 +2,7 @@
 ## Rocket Motor Thrust Curve Plotter
 
 **Status:** Draft v1
-**Owner:** Project Lead / Coordinator (design, direction, and project management)
+**Owner:(Just-Yug)** Project Lead / Coordinator (design, direction, and project management)
 **Purpose of this document:** Single source of truth for what this application is, what it does, and how it should be built. Intended to guide AI-assisted development and any future contributors.
 
 ---
