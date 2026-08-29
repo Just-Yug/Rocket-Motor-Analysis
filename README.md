@@ -6,7 +6,7 @@ Built as a web app, with a downloadable desktop version for offline, faster loca
 
 ## About
 
-This project is designed and directed by **[Your Name]** (concept, technical specification, and project management), with implementation carried out via AI-assisted development.
+This project is designed and directed by **Just-Yug** (concept, technical specification, and project management), with implementation carried out via AI-assisted development.
 
 ## Status
 
