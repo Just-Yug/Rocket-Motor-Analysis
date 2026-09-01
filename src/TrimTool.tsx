@@ -112,7 +112,7 @@ export default function TrimTool({ test, onConfirm }: TrimToolProps) {
     <div className="trim-tool">
       <p className="import-error" style={{ color: '#ffcf6e' }}>
         {crossingCount > 1
-          ? `Detected ${crossingCount} thrust rises above 5% of peak — this usually means a pre-ignition spike or other anomaly. Adjust the range below to include only the real burn.`
+          ? `Detected thrust rises above 5% of peak ${crossingCount} times — this usually means a pre-ignition spike or other anomaly. Adjust the range below to include only the real burn.`
           : 'Adjust the trim range if needed, or confirm to use the full recording.'}
       </p>
 
