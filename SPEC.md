@@ -2,7 +2,7 @@
 ## Rocket Motor Thrust Curve Plotter
 
 **Status:** Draft v1
-**Owner:(Just-Yug)** Project Lead / Coordinator (design, direction, and project management)
+**Owner:** Project Lead / Coordinator (design, direction, and project management)
 **Purpose of this document:** Single source of truth for what this application is, what it does, and how it should be built. Intended to guide AI-assisted development and any future contributors.
 
 ---
@@ -45,8 +45,9 @@ Features are grouped into build phases. Each phase should be a functioning, demo
 - Import a single test file (CSV or Excel)
 - CSV/Excel import mapping wizard
 - Plot Thrust vs. Time for that single test
+- Manual trim/crop tool: auto-prompted when the thrust signal crosses upward through the 5% peak-thrust threshold more than once (indicating a pre-ignition spike or other anomaly); once set, only data inside the trim window is used for plotting and all calculations — data outside the trim window is excluded entirely
 - Calculate and display: Total Impulse, Peak Thrust, Average Thrust, Burn Time
-- Flat (non-hierarchical) list of imported test files
+- Flat (non-hierarchical) list of imported test files, with the ability to remove/delete an imported test from the list
 - Basic dark theme only
 
 ### V2 — Models, Classes & Multi-Plot
@@ -61,13 +62,14 @@ Features are grouped into build phases. Each phase should be a functioning, demo
 ### V3 — Analysis Depth
 - Chamber pressure support (Peak/Average Chamber Pressure), if pressure data is available
 - Outlier flagging in model averaging
-- Overlay normalization toggle (align by ignition point)
+- Overlay normalization toggle (align by ignition point, using the same configurable peak-thrust threshold convention as Burn Time — default 5%)
 - Uncertainty/error bands on average curve
+- Optional noise filtering for load cell data (e.g. moving average / low-pass smoothing), toggleable per test and applied before metrics calculation — off by default so raw signal remains viewable
 
 ### V4 — Workflow & Interop
 - Test metadata panel (batch #, ambient temp, casing serial, date), searchable/filterable
 - Crosshair ruler lines + dotted-border point tooltip
-- Settings panel: dark theme, HSV color-square picker for the 16 test colors
+- Settings panel: dark theme, HSV color-square picker for the 16 test colors, sustained-threshold minimum duration (default 50ms) with on/off toggle
 - Export to simulation-compatible formats (OpenRocket `.eng` / `.rse`)
 - Batch report export (PDF summary per model)
 - Comparison mode across models (overlay averages from different models)
@@ -90,6 +92,7 @@ Test {
   name: string
   date: string (ISO date)
   rawData: [{ time: number, thrust: number, pressure?: number }]
+  trimRange: { start: number, end: number } | null  // active data window; all calculations use only rawData within this range. null = full range, no trim applied
   metadata: {
     propellantBatch?: string
     ambientTemp?: number
@@ -156,7 +159,15 @@ Metrics {
 - **Thrust Coefficient (Cf)** = Thrust ÷ (Chamber Pressure × Nozzle Throat Area) — requires nozzle throat area as a known input
 - **Mass Flow Rate (ṁ)** = ρₚ · A_b · r, where ρₚ is propellant density, A_b is burn surface area, and r is propellant burn rate — requires propellant density, burn surface area, and burn rate as known inputs (kg/s)
 
-All thresholds (e.g., the 5% burn-time cutoff) should be exposed as configurable settings, not hardcoded, since conventions vary.
+All thresholds (e.g., the 5% burn-time cutoff) should be exposed as configurable settings, not hardcoded, since conventions vary. The Overlay Normalization Toggle's ignition-point detection (V3) reuses this same peak-thrust threshold value and setting, rather than defining a separate one.
+
+**Trim precedence:** when a test has a `trimRange` set (V1, manual trim/crop tool), all of the above calculations — and all threshold/crossing detection described below — operate only on the data points within `trimRange`. Data outside the trim window is not read by any calculation, plot, or averaging step; it is treated as if it does not exist for that test.
+
+**Sustained-threshold requirement (ignition/burn-start detection):** a threshold crossing (e.g., for Burn Time or Action Time start) only counts as valid once the thrust signal remains above the threshold continuously for a minimum duration (default: 50ms), rather than triggering on the first instant it crosses. This prevents brief rig noise, load-cell transients, or clamp-release spikes from being mistaken for ignition. This minimum duration is configurable in the Settings panel (V4) and can be disabled entirely (reverting to instant-crossing detection) if the user prefers.
+
+**Auto-detecting when a manual trim is needed:** the app counts only *upward* crossings of the 5% peak-thrust threshold (thrust rising from below the threshold to above it) — downward crossings (thrust falling back below threshold) are not counted for this check, since every normal test has exactly one upward crossing (ignition) and one downward crossing (burnout). If a test's raw data contains **more than one upward crossing**, this indicates an anomaly (e.g., a pre-ignition spike, as opposed to a clean single burn), and the app should automatically prompt the user with the manual trim/crop tool so they can select the correct data window before any metrics are calculated. A test with exactly one upward crossing needs no prompt and proceeds normally without a trim.
+
+When per-test noise filtering (V3) is enabled for a given test, filtering is applied to the raw signal first, and all metrics above are then calculated from the filtered curve rather than the raw one, for that test.
 
 ---
 
