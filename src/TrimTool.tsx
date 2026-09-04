@@ -175,8 +175,8 @@ export default function TrimTool({ test, onConfirm }: TrimToolProps) {
     <div className="trim-tool">
       <p className="import-error" style={{ color: '#ffcf6e' }}>
         {crossingCount > 1
-          ? `Detected ${crossingCount} thrust rises above 5% of peak — this usually means a pre-ignition spike or other anomaly. Drag the green lines to include only the real burn.`
-          : 'Drag the green lines to adjust the trim range, or confirm to use the full recording.'}
+          ? `Detected thrust rises above 5% of peak ${crossingCount} times — this usually means a pre-ignition spike or other anomaly. Drag the green lines to include only the real burn. 
+             Drag the green lines to adjust the trim range, or confirm to use the full recording.'}
       </p>
 
       <div ref={wrapperRef} className="trim-chart-wrapper">
@@ -198,7 +198,7 @@ export default function TrimTool({ test, onConfirm }: TrimToolProps) {
         <input
           type="number"
           value={start}
-          step="0.001"
+          step="1"
           min={dataMin}
           max={end}
           onChange={(e) => {
@@ -212,7 +212,7 @@ export default function TrimTool({ test, onConfirm }: TrimToolProps) {
         <input
           type="number"
           value={end}
-          step="0.001"
+          step="1"
           min={start}
           max={dataMax}
           onChange={(e) => {
